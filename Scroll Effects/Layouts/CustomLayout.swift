@@ -32,13 +32,20 @@ class CustomLayout: UICollectionViewFlowLayout{
         
         print("currentPage: \(currentPage)")
         
+    
+        let offset = updateOffset(vc)
+        
+        previousOffset = offset
+        return CGPoint(x: offset, y: proposedContentOffset.y)
+    }
+    
+    func updateOffset(_ vc: UICollectionView) -> CGFloat{
         let w = vc.frame.width
         let itemW = itemSize.width
         let sp = minimumLineSpacing
         let edge = (w - itemW - sp * 2) / 2
         let offset = (itemW + sp) * CGFloat(currentPage) - (edge + sp)
         
-        previousOffset = offset
-        return CGPoint(x: offset, y: proposedContentOffset.y)
+        return offset
     }
 }

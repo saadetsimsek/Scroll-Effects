@@ -33,10 +33,43 @@ class ViewController: UIViewController {
         view.addSubview(collectionView)
         setupViews()
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        let indexPath = IndexPath(item: 1, section: 0)
+        collectionView.scrollToItem(at: indexPath,
+                                    at: .centeredHorizontally,
+                                    animated: true)
+        
+        layout.currentPage = indexPath.item
+        layout.previousOffset = layout.updateOffset(collectionView)
+        
+        if let cell = collectionView.cellForItem(at: indexPath) {
+            transformCell(cell)
+        }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        let indexPath = IndexPath(item: 1, section: 0)
+        collectionView.scrollToItem(at: indexPath,
+                                    at: .centeredHorizontally,
+                                    animated: true)
+        
+        layout.currentPage = indexPath.item
+        layout.previousOffset = layout.updateOffset(collectionView)
+        
+        if let cell = collectionView.cellForItem(at: indexPath) {
+            transformCell(cell)
+        }
+    }
 
 
     private func setupViews(){
-        collectionView.backgroundColor = .clear
+        collectionView.backgroundColor = .cyan
+        collectionView.decelerationRate = .fast
         collectionView.contentInsetAdjustmentBehavior = .never
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.showsVerticalScrollIndicator = false
@@ -81,5 +114,65 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: itemW, height: itemH)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+     
+        if indexPath.item == layout.currentPage {
+            print("did select")
+        }
+        else {
+            collectionView.scrollToItem(at: indexPath,
+                                        at: .centeredHorizontally,
+                                        animated: true)
+            layout.currentPage = indexPath.item
+            layout.previousOffset = layout.updateOffset(collectionView)
+            setupCell()
+        }
+    }
+}
+//MARK: UIScrollView
+
+extension ViewController {
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+         
+        if decelerate {
+            setupCell()
+        }
+    }
+    
+    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+        print("end")
+    }
+    
+    private func setupCell(){
+        let indexPath = IndexPath(item: layout.currentPage, section: 0)
+        if let cell = collectionView.cellForItem(at: indexPath){
+            transformCell(cell)
+            print("transform cell")
+        }
+        
+    }
+    
+    private func transformCell(_ cell: UICollectionViewCell, isEffect: Bool = true) {
+        
+        if !isEffect{
+            cell.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
+            return
+        }
+        
+        UIView.animate(withDuration: 0.2) {
+            cell.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
+        }
+        
+        for otherCell in collectionView.visibleCells {
+            if let indexPath = collectionView.indexPath(for: otherCell) {
+                if indexPath.item != layout.currentPage{
+                    UIView.animate(withDuration: 0) {
+                        otherCell.transform = .identity
+                    }
+                }
+            }
+        }
     }
 }
